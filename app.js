@@ -17,7 +17,7 @@ function sendMessage()
 //sendMessage();
 
 //Our first example Route
-app.get("/", function(req, res){ //callback function(request, response)
+app.get("/", function(req, res){ //app.get([endpoint], callback function(request, response))
     //res.send("Hello everyone!"); //serve a string
     res.sendFile(path.join(__dirname, "public", "index.html")); //serve a webpage
 });
@@ -25,6 +25,13 @@ app.get("/", function(req, res){ //callback function(request, response)
 //Route using games.json
 app.get("/testjson", (req, res)=>{ //()=> means anonymous function
     res.sendFile(path.join(__dirname, "public", "json/games.json"))
+});
+
+//Sending Status Codes
+app.get("/statuscode", (req, res)=>{ //localhost:3000/statuscode
+    res.sendStatus(200); //sends fake status codes //OK
+    res.sendStatus(404); //page not found
+    res.sendStatus(500); //internal server error
 });
 
 //Node can run more than one function at the same time, which can cause race condition, a common issue with Node
