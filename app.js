@@ -1,49 +1,63 @@
-const express = require("express");
-const path = require("path");
+const express = require("express"); //hosts server
+//const path = require("path"); 
+const mongoose = require("mongoose"); //interface with mongoDB
+const bodyParser = require("body-parser"); //parses JSON
 
 const app = express();
 const port = 3000; //port on computer that we will be using to communicate to the outside
+//*4
 
-//Middleware to Serve Static Data (data that won't change)
-app.use(express.static(path.join(__dirname, "public"))); //app.use: tell node application what it can use //express.static: declare static directory
+//Middleware
+app.use(bodyParser.json()); //to parse JSON requests
+//*2
+//Serve Static Data (data that won't change)
+//app.use(express.static(path.join(__dirname, "public"))); //app.use: tell node application what it can use //express.static: declare static directory
 
-let message = "Wouldn't you like to be a pepper too???";
+const mongoURI = "mongodb://localhost:2707/favfood"; //set up mongoDB connection
+mongoose.connect(mongoURI);
 
-function sendMessage()
-{
-    console.log(message);
-}
+const db = mongoose.connection;
 
-//sendMessage();
+//Check if DB is running
+db.on("error", console.error.bind(console, db.once("open", ()=>{
+    console.log("Connected to MongoDB Database");
+})));
 
-//Our first example Route
-app.get("/", function(req, res){ //app.get([endpoint], callback function(request, response))
-    //res.send("Hello everyone!"); //serve a string
-    res.sendFile(path.join(__dirname, "public", "index.html")); //serve a webpage
+//Template for the data being received
+const foodSchema = new mongoose.Schema({
+    rank: Number, food: String
+});
+const Food = mongoose.model("Food", foodSchema, "favfood"); //schema, name of collection
+
+app.get("/", async(req, res)=>{
+    try {
+        const food = await Food.find();
+        res.json(food);
+    } catch(err){
+        res.status(500).json({
+            error:"Failed to get food"
+        })
+    }
 });
 
-//Route using games.json
-app.get("/testjson", (req, res)=>{ //()=> means anonymous function
-    res.sendFile(path.join(__dirname, "public", "json/games.json"))
-});
+app.listen(port, ()=>{ //start server
+    console.log(`Server is running on port ${port}`);
+})
 
-//Sending Status Codes
-app.get("/statuscode", (req, res)=>{ //localhost:3000/statuscode
-    res.sendStatus(200); //sends fake status codes //OK
-    res.sendStatus(404); //page not found
-    res.sendStatus(500); //internal server error
-});
 
-//Node can run more than one function at the same time, which can cause race condition, a common issue with Node
-setTimeout(()=>{
-    console.log("Hello 2 seconds later")
-}, 2000);
 
-setTimeout(()=>{
-    console.log("Hello now")
-}, 0);
+// //Our first example Route
+// app.get("/", function(req, res){ //app.get([endpoint], callback function(request, response))
+//     //res.send("Hello everyone!"); //serve a string
+//     res.sendFile(path.join(__dirname, "public", "index.html")); //serve a webpage
+// });
 
-//spin the server?
-app.listen(port, function(){
-    console.log(`Server is running on port: ${port}`); //string literal
-}); //port, callback function (anonymous function that will trigger things)
+// //Route using games.json
+// app.get("/testjson", (req, res)=>{ //()=> means anonymous function
+//     res.sendFile(path.join(__dirname, "public", "json/games.json"))
+// });
+
+// //spin the server?
+// app.listen(port, function(){
+//     console.log(`Server is running on port: ${port}`); //string literal
+// }); //port, callback function (anonymous function that will trigger things)

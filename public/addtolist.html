@@ -6,15 +6,16 @@
     <title>Add to List</title>
     <link rel="stylesheet" href="css/style.css"> 
 </head>
-<body>
+<body> <!--MODIFIED-->
     <h1>Add to List</h1>
-    <form>
-        <label for="name">Item Name:</label><br>
-        <input type="text" id="name" name="name"><br>
-        <label for="placement">Number Placement:</label><br>
-        <input type="number" id="placement" name="placement">
+    <form action="/addfood" method="POST"> 
+        <label for="food">Food Name:</label><br>
+        <input type="text" id="food" name="food"><br>
+        <label for="rank">Rank:</label><br>
+        <input type="number" id="rank" name="rank">
+        <br>
+        <button type="submit">Add</button>
     </form>
-    <button type="submit">Add</button>
     <br><br>
     <a href="index.html">Back</a>
 </body>
