@@ -1,4 +1,4 @@
-const userContainer = document.getElementById("food-container");
+const foodContainer = document.getElementById("food-container");
 
 //Grab foods
 const fetchFoods = async ()=>{

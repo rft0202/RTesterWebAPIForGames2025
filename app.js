@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, "public"))); //app.use: tell node ap
 app.use(bodyParser.json()); //to parse JSON requests
 //*2
 
-const mongoURI = "mongodb://localhost:2707/favfood"; //set up mongoDB connection
+const mongoURI = "mongodb://localhost:27017/data"; //set up mongoDB connection
 mongoose.connect(mongoURI);
 
 const db = mongoose.connection;
