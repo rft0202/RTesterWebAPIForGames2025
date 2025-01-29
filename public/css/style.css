@@ -6,3 +6,7 @@ li{
     margin-left: 535px;
     text-align: left;
 }
+button{
+    width: 100px;
+    background-color: gray;
+}

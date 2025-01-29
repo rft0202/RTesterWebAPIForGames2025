@@ -18,7 +18,9 @@ const fetchFoods = async ()=>{
         foods.forEach((food) => {
             const foodDiv = document.createElement("div");
             foodDiv.className = "food";
-            foodDiv.innerHTML = `${food.rank}. ${food.food}`; //string literal (case sensitive)
+            foodDiv.innerHTML = `${food.rank}. ${food.food}
+            <form action="/updatefood/${food.food}" method="PUT"><button type="submit">Update</button></form>
+            <form action="/deletefood/rank?rank=${food.rank}" method="DELETE"><button type="submit">Delete</button></form>`; //string literal (case sensitive)
             foodContainer.appendChild(foodDiv);
         });
     }catch(error){

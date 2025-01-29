@@ -13,6 +13,7 @@ app.use(express.static(path.join(__dirname, "public"))); //app.use: tell node ap
 //Middleware
 app.use(bodyParser.json()); //to parse JSON requests
 //*2
+app.use(express.urlencoded({extended:true}));
 
 const mongoURI = "mongodb://localhost:27017/data"; //set up mongoDB connection
 mongoose.connect(mongoURI);
@@ -39,8 +40,8 @@ app.get("/", (req,res)=>{
 
 app.get("/food", async (req, res)=>{
     try {
-        const food = await Food.find();
-        res.json(food);
+        const foods = await Food.find();
+        res.json(foods);
     } catch(err){
         res.status(500).json({error:"Failed to get food."});
     }
@@ -50,7 +51,53 @@ app.listen(port, ()=>{ //start server
     console.log(`Server is running on port ${port}`);
 })
 
+//Create Route (POST)
+//Add to list
+*3
+app.post("/addfood", async (req, res)=>{
+    try{
+        const newFood = new Food(req.body);
+        const saveFood = await newFood.save();
+        res.redirect("/");
+    } catch(err){
+        res.status(500).json({error:"Failed to add person"});
+    }
+});
 
+//Update Route (PUT)
+app.put("/updatefood/:food", (req,res)=>{
+    Food.findByIdAndUpdate(req.params.food, req.body, { //id, request body
+        new:true, //is a new request
+        runValidators:true 
+    }).then((updatedFood)=>{ //if it completes, then (automatically pass into promise statement)
+        if(!updatedFood){
+            return res.status(404).json({error:"Failed to find the food."});
+        }
+        res.json(updatedFood); //update
+        res.redirect("/");
+    }).catch((err)=>{ //function call
+        res.status(400).json({error:"Failed to update the food."}); 
+    }); 
+});
+
+//Delete Route (DELETE)
+app.delete("/deletefood/rank", async (req,res)=>{
+    try{
+        const foodname = req.query; //query request
+        const food = await Food.find(foodname); //find using the query
+
+        if(food.length === 0){ //=== means exactly equal to (the data type matches)
+            return res.status(404).json({error:"Failed to find the food."}); 
+        } 
+
+        const deletedFood = await Food.findOneAndDelete(foodname);
+        res.json({message: "Food deleted successfully."});
+        res.redirect("/");
+    }catch(err){
+        console.log(err);
+        res.status(404).json({error:"Food not found."}); 
+    }
+}); 
 
 // //Our first example Route
 // app.get("/", function(req, res){ //app.get([endpoint], callback function(request, response))
