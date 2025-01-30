@@ -53,20 +53,20 @@ app.listen(port, ()=>{ //start server
 
 //Create Route (POST)
 //Add to list
-*3
+//*3
 app.post("/addfood", async (req, res)=>{
     try{
         const newFood = new Food(req.body);
         const saveFood = await newFood.save();
         res.redirect("/");
     } catch(err){
-        res.status(500).json({error:"Failed to add person"});
+        res.status(500).json({error:"Failed to add food"});
     }
 });
 
 //Update Route (PUT)
-app.put("/updatefood/:food", (req,res)=>{
-    Food.findByIdAndUpdate(req.params.food, req.body, { //id, request body
+app.put("/updatefood/:id", (req,res)=>{
+    Food.findByIdAndUpdate(req.params.id, req.body, { //id, request body
         new:true, //is a new request
         runValidators:true 
     }).then((updatedFood)=>{ //if it completes, then (automatically pass into promise statement)
