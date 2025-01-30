@@ -31,11 +31,11 @@ const updateFood = async ()=>{
 
         foodContainer.innerHTML = "";
         foodDiv.className = "food";
-        foodDiv.innerHTML = `<form action="/updatefood/" method="PUT"> 
+        foodDiv.innerHTML = `<form action="/updatefood/${food._id}" method="POST"> 
         <label for="food">Food Name:</label><br>
-        <input type="text" id="food" name="food">${food.food}</input><br>
+        <input type="text" id="food" name="food" placeholder="${food.food}"><br>
         <label for="rank">Rank:</label><br>
-        <input type="number" id="rank" name="rank">${food.rank}</input>
+        <input type="number" id="rank" name="rank" placeholder="${food.rank}">
         <br>
         <button type="submit">Update</button></form>`
         foodContainer.appendChild(foodDiv);

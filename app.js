@@ -41,6 +41,7 @@ app.get("/", (req,res)=>{
 app.get("/food", async (req, res)=>{
     try {
         const foods = await Food.find();
+        foods.sort((a,b)=>a.rank-b.rank);
         res.json(foods);
     } catch(err){
         res.status(500).json({error:"Failed to get food."});
@@ -60,14 +61,6 @@ app.get("/food/:id", async (req,res)=>{
     }
 });
 
-app.get("/foodtoupdate/:id", async (req, res)=>{
-    try{
-        res.sendFile(path.join(__dirname + "/public/update.html"));
-    }catch(err){
-        res.status(500).json({error:"Failed to get food."});
-    }
-})
-
 app.listen(port, ()=>{ //start server
     console.log(`Server is running on port ${port}`);
 })
@@ -86,7 +79,7 @@ app.post("/addfood", async (req, res)=>{
 });
 
 //Update Route (PUT)
-app.put("/updatefood/:id", (req,res)=>{
+app.post("/updatefood/:id", (req,res)=>{
     Food.findByIdAndUpdate(req.params.id, req.body, { //id, request body
         new:true, //is a new request
         runValidators:true 
@@ -94,7 +87,7 @@ app.put("/updatefood/:id", (req,res)=>{
         if(!updatedFood){
             return res.status(404).json({error:"Failed to find the food."});
         }
-        res.json(updatedFood); //update
+        //res.json(updatedFood); //update
         res.redirect("/");
     }).catch((err)=>{ //function call
         res.status(400).json({error:"Failed to update the food."}); 
@@ -102,7 +95,7 @@ app.put("/updatefood/:id", (req,res)=>{
 });
 
 //Delete Route (DELETE)
-app.delete("/deletefood/rank", async (req,res)=>{
+app.post("/deletefood/food", async (req,res)=>{
     try{
         const foodname = req.query; //query request
         const food = await Food.find(foodname); //find using the query
@@ -112,7 +105,7 @@ app.delete("/deletefood/rank", async (req,res)=>{
         } 
 
         const deletedFood = await Food.findOneAndDelete(foodname);
-        res.json({message: "Food deleted successfully."});
+        //res.json({message: "Food deleted successfully."});
         res.redirect("/");
     }catch(err){
         console.log(err);
