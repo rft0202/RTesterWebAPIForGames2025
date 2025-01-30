@@ -19,7 +19,7 @@ const fetchFoods = async ()=>{
             const foodDiv = document.createElement("div");
             foodDiv.className = "food";
             foodDiv.innerHTML = `${food.rank}. ${food.food}
-            <form action="/update.html" method="GET"><form action="${food.food}" method="POST"><form action="${food.rank}" method="POST"><button type="submit">Update</button></form>
+            <form action="/foodtoupdate/${food._id}" method="GET"><button type="submit">Update</button></form>
             <form action="/deletefood/rank?rank=${food.rank}" method="DELETE"><form action="${food.rank}" method="POST"><button type="submit">Delete</button></form>`; //string literal (case sensitive)
             foodContainer.appendChild(foodDiv);
         });

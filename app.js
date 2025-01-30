@@ -47,6 +47,27 @@ app.get("/food", async (req, res)=>{
     }
 });
 
+//Get by ID
+app.get("/food/:id", async (req,res)=>{
+    try{
+        const food = await Food.findById(req.params.id);
+        if(!food){
+            return res.status(404).json({error:"Food not found."});
+        }
+        res.json(food);
+    }catch(err){
+        res.status(500).json({error:"Failed to get the food."});
+    }
+});
+
+app.get("/foodtoupdate/:id", async (req, res)=>{
+    try{
+        res.sendFile(path.join(__dirname + "/public/update.html"));
+    }catch(err){
+        res.status(500).json({error:"Failed to get food."});
+    }
+})
+
 app.listen(port, ()=>{ //start server
     console.log(`Server is running on port ${port}`);
 })
