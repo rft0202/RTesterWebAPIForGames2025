@@ -2,6 +2,13 @@ const express = require("express"); //hosts server
 const path = require("path"); 
 const mongoose = require("mongoose"); //interface with mongoDB
 const bodyParser = require("body-parser"); //parses JSON
+//Added - Login
+//*6
+const session = require("express-session");
+const bcrypt = require("bcryptjs");
+//
+//Added - Registering Users
+//*11 !!!
 
 const app = express();
 const port = 3000; //port on computer that we will be using to communicate to the outside
@@ -15,6 +22,29 @@ app.use(bodyParser.json()); //to parse JSON requests
 //*2
 app.use(express.urlencoded({extended:true}));
 
+//Added - Login
+//*7
+//Sets up session variable
+app.use(session({
+    secret: "12345",
+    resave:false,
+    saveUninitialized:true,
+    cookie:{secure:false} //set to true if using https (aka have a ssl certificate)
+}));
+//Create a fake user in our database
+const user = {
+    admin:bcrypt.hashSync("12345", 10) //(secret/password, default hash value?)
+};
+//*13 !!!
+
+//Check Authentication
+function isAuthenticated(req,res,next){
+    if(req.session.user) return next(); //valid credentials, let them pass
+    return res.redirect("/login"); //not valid credentials, redirect back to login page
+};
+//
+
+//MongoDB connection setup
 const mongoURI = "mongodb://localhost:27017/data"; //set up mongoDB connection
 mongoose.connect(mongoURI);
 
@@ -61,6 +91,26 @@ app.get("/food/:id", async (req,res)=>{
     }
 });
 
+//Added - Login
+//*8
+//???
+app.get("/addfood", isAuthenticated, (req,res)=>{
+    res.sendFile(path.join(__dirname, "public", "addtolist.html")); 
+});
+
+//???
+app.get("/update", isAuthenticated, (req,res)=>{
+    res.sendFile(path.join(__dirname, "public", "update.html")); 
+});
+
+app.get("/login", (req,res)=>{
+    res.sendFile(path.join(__dirname + "/public/login.html"));
+});
+//
+
+//Added - Register user
+//*12 !!!
+
 app.listen(port, ()=>{ //start server
     console.log(`Server is running on port ${port}`);
 })
@@ -93,6 +143,31 @@ app.post("/updatefood/:id", (req,res)=>{
         res.status(400).json({error:"Failed to update the food."}); 
     }); 
 });
+
+//Added - Login
+//*9
+app.post("/login", (req, res)=>{
+    const {username, password} = req.body;
+    console.log(req.body);
+    if(user[username] && bcrypt.compareSync(password, user[username])){
+        req.session.user = username;
+        return res.redirect("/");
+    }
+    //Not valid login
+    req.session.error = "Invalid User";
+    return res.redirect("/login");
+});
+
+//Logout
+app.get("/logout", (req,res)=>{
+    req.session.destroy(()=>{
+        res.redirect("/login")
+    });
+});
+//
+
+//Added - Registering User
+//*14!!!
 
 //Delete Route (DELETE)
 app.post("/deletefood/food", async (req,res)=>{
