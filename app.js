@@ -94,7 +94,7 @@ app.get("/food/:id", async (req,res)=>{
 //Added - Login
 //*8
 //???
-app.get("/addfood", isAuthenticated, (req,res)=>{
+app.get("/addtolist", isAuthenticated, (req,res)=>{
     res.sendFile(path.join(__dirname, "public", "addtolist.html")); 
 });
 
@@ -105,6 +105,11 @@ app.get("/update", isAuthenticated, (req,res)=>{
 
 app.get("/login", (req,res)=>{
     res.sendFile(path.join(__dirname + "/public/login.html"));
+});
+
+app.get("/checklogin", (req, res)=>{
+    if(req.session.user) res.sendFile(path.join(__dirname, "public/js", "loginscript.js"));
+    else res.send("public/js/loginscript.js");
 });
 //
 
@@ -129,7 +134,7 @@ app.post("/addfood", async (req, res)=>{
 });
 
 //Update Route (PUT)
-app.post("/updatefood/:id", (req,res)=>{
+app.post("/updatefood/:id", isAuthenticated, (req,res)=>{
     Food.findByIdAndUpdate(req.params.id, req.body, { //id, request body
         new:true, //is a new request
         runValidators:true 
@@ -170,7 +175,7 @@ app.get("/logout", (req,res)=>{
 //*14!!!
 
 //Delete Route (DELETE)
-app.post("/deletefood/food", async (req,res)=>{
+app.post("/deletefood/food", isAuthenticated, async (req,res)=>{
     try{
         const foodname = req.query; //query request
         const food = await Food.find(foodname); //find using the query
