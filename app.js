@@ -8,7 +8,8 @@ const session = require("express-session");
 const bcrypt = require("bcryptjs");
 //
 //Added - Registering Users
-//*11 !!!
+//*11
+const User = require("./models/User");
 
 const app = express();
 const port = 3000; //port on computer that we will be using to communicate to the outside
@@ -31,11 +32,6 @@ app.use(session({
     saveUninitialized:true,
     cookie:{secure:false} //set to true if using https (aka have a ssl certificate)
 }));
-//Create a fake user in our database
-const user = {
-    admin:bcrypt.hashSync("12345", 10) //(secret/password, default hash value?)
-};
-//*13 !!!
 
 //Check Authentication
 function isAuthenticated(req,res,next){
@@ -114,7 +110,38 @@ app.get("/checklogin", (req, res)=>{
 //
 
 //Added - Register user
-//*12 !!!
+//*12
+app.get("/register", (req,res)=>{
+    res.sendFile(path.join(__dirname, "public", "register.html"));
+});
+
+app.post("/register", async (req,res)=>{
+    try{
+        const {username, password, email} = req.body;
+
+        const existingUser = await User.findOne({username});
+
+        if(existingUser){
+            return res.send("Username already taken. Try a different one");
+        }
+
+        const existingEmail = await User.findOne({email});
+
+        if(existingEmail){
+            return res.send("Email in use. Try a different one");
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, 10); //Create hashed password //num is how encrypted you want it to be
+        const newUser = new User({username, password:hashedPassword, email});
+        await newUser.save();
+
+        res.redirect("/login");
+
+    }catch(err){
+        res.status(500).send("Error registering new user.");
+    }
+});
+//
 
 app.listen(port, ()=>{ //start server
     console.log(`Server is running on port ${port}`);
@@ -150,11 +177,13 @@ app.post("/updatefood/:id", isAuthenticated, (req,res)=>{
 });
 
 //Added - Login
-//*9
-app.post("/login", (req, res)=>{
+//*9 *14
+app.post("/login", async (req, res)=>{
     const {username, password} = req.body;
     console.log(req.body);
-    if(user[username] && bcrypt.compareSync(password, user[username])){
+
+    const user = await User.findOne({username});
+    if(user && bcrypt.compareSync(password, user.password)){ //Check if password in db and inputted password match
         req.session.user = username;
         return res.redirect("/");
     }
@@ -170,9 +199,6 @@ app.get("/logout", (req,res)=>{
     });
 });
 //
-
-//Added - Registering User
-//*14!!!
 
 //Delete Route (DELETE)
 app.post("/deletefood/food", isAuthenticated, async (req,res)=>{
