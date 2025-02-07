@@ -89,12 +89,10 @@ app.get("/food/:id", async (req,res)=>{
 
 //Added - Login
 //*8
-//???
 app.get("/addtolist", isAuthenticated, (req,res)=>{
     res.sendFile(path.join(__dirname, "public", "addtolist.html")); 
 });
 
-//???
 app.get("/update", isAuthenticated, (req,res)=>{
     res.sendFile(path.join(__dirname, "public", "update.html")); 
 });
@@ -103,9 +101,8 @@ app.get("/login", (req,res)=>{
     res.sendFile(path.join(__dirname + "/public/login.html"));
 });
 
-app.get("/checklogin", (req, res)=>{
-    if(req.session.user) res.sendFile(path.join(__dirname, "public/js", "loginscript.js"));
-    else res.send("public/js/loginscript.js");
+app.get("/checklogin", isAuthenticated, (req, res)=>{
+    res.sendStatus(202);
 });
 //
 
@@ -195,7 +192,7 @@ app.post("/login", async (req, res)=>{
 //Logout
 app.get("/logout", (req,res)=>{
     req.session.destroy(()=>{
-        res.redirect("/login")
+        res.redirect("/")
     });
 });
 //

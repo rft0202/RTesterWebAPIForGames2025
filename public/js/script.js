@@ -11,16 +11,22 @@ const fetchFoods = async ()=>{
 
         //Parse JSON
         const foods = await response.json();
-
         //Format the data to HTML
         foodContainer.innerHTML = ""; //clear it
 
         foods.forEach((food) => {
             const foodDiv = document.createElement("div");
             foodDiv.className = "food";
-            foodDiv.innerHTML = `${food.rank}. ${food.food}
-            <form action="javascript:window.location.href='/update.html?id=${food._id}'" method="GET"><button type="submit">Update</button></form>
-            <form action="/deletefood/food?food=${food.food}" method="post"><form action="${food.rank}" method="POST"><button type="submit">Delete</button></form>`; //string literal (case sensitive)
+            checkCredentials(()=>{
+                //Logged in
+                foodDiv.innerHTML = `${food.rank}. ${food.food}
+                <form action="javascript:window.location.href='/update.html?id=${food._id}'" method="GET"><button type="submit">Update</button></form>
+                <form action="/deletefood/food?food=${food.food}" method="post"><form action="${food.rank}" method="POST"><button type="submit">Delete</button></form>`; //string literal (case sensitive)
+            }, ()=>{
+                //Not Logged In
+                foodDiv.innerHTML = `${food.rank}. ${food.food}`;
+            });
+            
             foodContainer.appendChild(foodDiv);
         });
     }catch(error){
