@@ -228,6 +228,10 @@ app.post("/deletefood/food", isAuthenticated, async (req,res)=>{
     }
 }); 
 
+//Added - Cloud
+//*19
+module.exports = app;
+
 // //Our first example Route
 // app.get("/", function(req, res){ //app.get([endpoint], callback function(request, response))
 //     //res.send("Hello everyone!"); //serve a string
