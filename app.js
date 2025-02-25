@@ -42,7 +42,10 @@ function isAuthenticated(req,res,next){
 //
 
 //MongoDB connection setup
-const mongoURI = "mongodb://localhost:27017/data"; //set up mongoDB connection
+//const mongoURI = "mongodb://localhost:27017/data"; //set up mongoDB connection
+//*15
+//Added - Access non-local DB
+const mongoURI = "mongodb+srv://rftester:<db_password>@cluster0.i75lv.mongodb.net/";
 mongoose.connect(mongoURI);
 
 const db = mongoose.connection;
