@@ -2,14 +2,17 @@ const express = require("express"); //hosts server
 const path = require("path"); 
 const mongoose = require("mongoose"); //interface with mongoDB
 const bodyParser = require("body-parser"); //parses JSON
-//Added - Login
+//Login
 //*6
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 //
-//Added - Registering Users
+//Registering Users
 //*11
 const User = require("./models/User");
+//Added - Hide Sensitive Information
+//*16
+require("dotenv").config();
 
 const app = express();
 //const port = 3000; //port on computer that we will be using to communicate to the outside
@@ -24,11 +27,14 @@ app.use(bodyParser.json()); //to parse JSON requests
 //*2
 app.use(express.urlencoded({extended:true}));
 
-//Added - Login
+//Login
 //*7
 //Sets up session variable
 app.use(session({
-    secret: "12345",
+    //Hide Sensitive Information
+    //secret: "12345",
+    //*17
+    secret:process.env.SESSION_SECRET,
     resave:false,
     saveUninitialized:true,
     cookie:{secure:false} //set to true if using https (aka have a ssl certificate)
@@ -45,7 +51,9 @@ function isAuthenticated(req,res,next){
 //const mongoURI = "mongodb://localhost:27017/data"; //set up mongoDB connection
 //*15
 //Added - Access non-local DB
-const mongoURI = "mongodb+srv://rftester:rfayeteser@cluster0.i75lv.mongodb.net/";
+//*18
+//Added - Hide sensitive information
+const mongoURI = process.env.MONGODB_URI;
 mongoose.connect(mongoURI);
 
 const db = mongoose.connection;
