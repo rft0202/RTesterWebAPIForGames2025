@@ -6,8 +6,9 @@ const bodyParser = require("body-parser"); //parses JSON
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 //
-//Registering Users
-const User = require("./models/User");
+//Registering High Scores
+//const User = require("./models/User");
+const HighScore = require("./models/HighScore");
 //Hide Sensitive Information
 require("dotenv").config();
 
@@ -67,78 +68,53 @@ app.get("/", (req,res)=>{
     res.sendFile("index.html");
 });
 
-app.get("/food", async (req, res)=>{
+app.get("/highscores", async (req, res)=>{
     try {
-        const foods = await Food.find();
-        foods.sort((a,b)=>a.rank-b.rank);
-        res.json(foods);
+        const highscores = await HighScore.find();
+        highscores.sort((a,b)=>a.highscore-b.highscore);
+        res.json(highscores);
     } catch(err){
-        res.status(500).json({error:"Failed to get food."});
+        res.status(500).json({error:"Failed to get highscores."});
     }
 });
 
 //Get by ID
-app.get("/food/:id", async (req,res)=>{
-    try{
-        const food = await Food.findById(req.params.id);
-        if(!food){
-            return res.status(404).json({error:"Food not found."});
-        }
-        res.json(food);
-    }catch(err){
-        res.status(500).json({error:"Failed to get the food."});
-    }
-});
+// app.get("/food/:id", async (req,res)=>{
+//     try{
+//         const food = await Food.findById(req.params.id);
+//         if(!food){
+//             return res.status(404).json({error:"Food not found."});
+//         }
+//         res.json(food);
+//     }catch(err){
+//         res.status(500).json({error:"Failed to get the food."});
+//     }
+// });
 
-//Added - Login
-app.get("/addtolist", isAuthenticated, (req,res)=>{
-    res.sendFile(path.join(__dirname, "public", "addtolist.html")); 
-});
+// //Added - Login
+// app.get("/addtolist", isAuthenticated, (req,res)=>{
+//     res.sendFile(path.join(__dirname, "public", "addtolist.html")); 
+// });
 
-app.get("/update", isAuthenticated, (req,res)=>{
-    res.sendFile(path.join(__dirname, "public", "update.html")); 
-});
+// app.get("/update", isAuthenticated, (req,res)=>{
+//     res.sendFile(path.join(__dirname, "public", "update.html")); 
+// });
 
-app.get("/login", (req,res)=>{
-    res.sendFile(path.join(__dirname + "/public/login.html"));
-});
+// app.get("/login", (req,res)=>{
+//     res.sendFile(path.join(__dirname + "/public/login.html"));
+// });
 
-app.get("/checklogin", isAuthenticated, (req, res)=>{
-    res.sendStatus(202);
-});
+// app.get("/checklogin", isAuthenticated, (req, res)=>{
+//     res.sendStatus(202);
+// });
 //
 
-//Register user
-app.get("/register", (req,res)=>{
-    res.sendFile(path.join(__dirname, "public", "register.html"));
-});
+//Register High Score
+// app.get("/register", (req,res)=>{
+//     res.sendFile(path.join(__dirname, "public", "register.html"));
+// });
 
-app.post("/register", async (req,res)=>{
-    try{
-        const {username, password, email} = req.body;
 
-        const existingUser = await User.findOne({username});
-
-        if(existingUser){
-            return res.send("Username already taken. Try a different one");
-        }
-
-        const existingEmail = await User.findOne({email});
-
-        if(existingEmail){
-            return res.send("Email in use. Try a different one");
-        }
-
-        const hashedPassword = bcrypt.hashSync(password, 10); //Create hashed password //num is how encrypted you want it to be
-        const newUser = new User({username, password:hashedPassword, email});
-        await newUser.save();
-
-        res.redirect("/login");
-
-    }catch(err){
-        res.status(500).send("Error registering new user.");
-    }
-});
 //
 
 app.listen(port, ()=>{ //start server
@@ -146,74 +122,81 @@ app.listen(port, ()=>{ //start server
 })
 
 //Create Route (POST)
-//Add to list
-app.post("/addfood", async (req, res)=>{
+app.post("/register", async (req,res)=>{
     try{
-        const newFood = new Food(req.body);
-        const saveFood = await newFood.save();
-        res.redirect("/");
-    } catch(err){
-        res.status(500).json({error:"Failed to add food"});
+        const {name, highscore} = req.body;
+
+        const existingHighScore = await HighScore.findOne({name});
+
+        if(existingHighScore){
+            return res.send("Name already taken. Try a different one");
+        }
+
+        const newHighScore = new HighScore({name, highscore});
+        await newHighScore.save();
+
+    }catch(err){
+        res.status(500).send("Error registering new highscore.");
     }
 });
 
 //Update Route (PUT)
-app.post("/updatefood/:id", isAuthenticated, (req,res)=>{
-    Food.findByIdAndUpdate(req.params.id, req.body, { //id, request body
-        new:true, //is a new request
-        runValidators:true 
-    }).then((updatedFood)=>{ //if it completes, then (automatically pass into promise statement)
-        if(!updatedFood){
-            return res.status(404).json({error:"Failed to find the food."});
-        }
-        //res.json(updatedFood); //update
-        res.redirect("/");
-    }).catch((err)=>{ //function call
-        res.status(400).json({error:"Failed to update the food."}); 
-    }); 
-});
+// app.post("/updatefood/:id", isAuthenticated, (req,res)=>{
+//     Food.findByIdAndUpdate(req.params.id, req.body, { //id, request body
+//         new:true, //is a new request
+//         runValidators:true 
+//     }).then((updatedFood)=>{ //if it completes, then (automatically pass into promise statement)
+//         if(!updatedFood){
+//             return res.status(404).json({error:"Failed to find the food."});
+//         }
+//         //res.json(updatedFood); //update
+//         res.redirect("/");
+//     }).catch((err)=>{ //function call
+//         res.status(400).json({error:"Failed to update the food."}); 
+//     }); 
+// });
 
-//Login
-app.post("/login", async (req, res)=>{
-    const {username, password} = req.body;
-    console.log(req.body);
+//Login - NOT NEEDED?
+// app.post("/login", async (req, res)=>{
+//     const {username, password} = req.body;
+//     console.log(req.body);
 
-    const user = await User.findOne({username});
-    if(user && bcrypt.compareSync(password, user.password)){ //Check if password in db and inputted password match
-        req.session.user = username;
-        return res.redirect("/");
-    }
-    //Not valid login
-    req.session.error = "Invalid User";
-    return res.redirect("/login");
-});
+//     const user = await User.findOne({username});
+//     if(user && bcrypt.compareSync(password, user.password)){ //Check if password in db and inputted password match
+//         req.session.user = username;
+//         return res.redirect("/");
+//     }
+//     //Not valid login
+//     req.session.error = "Invalid User";
+//     return res.redirect("/login");
+// });
 
-//Logout
-app.get("/logout", (req,res)=>{
-    req.session.destroy(()=>{
-        res.redirect("/")
-    });
-});
-//
+// //Logout - NOT NEEDED?
+// app.get("/logout", (req,res)=>{
+//     req.session.destroy(()=>{
+//         res.redirect("/")
+//     });
+// });
+// //
 
-//Delete Route (DELETE)
-app.post("/deletefood/food", isAuthenticated, async (req,res)=>{
-    try{
-        const foodname = req.query; //query request
-        const food = await Food.find(foodname); //find using the query
+// //Delete Route (DELETE)
+// app.post("/deletefood/food", isAuthenticated, async (req,res)=>{
+//     try{
+//         const foodname = req.query; //query request
+//         const food = await Food.find(foodname); //find using the query
 
-        if(food.length === 0){ //=== means exactly equal to (the data type matches)
-            return res.status(404).json({error:"Failed to find the food."}); 
-        } 
+//         if(food.length === 0){ //=== means exactly equal to (the data type matches)
+//             return res.status(404).json({error:"Failed to find the food."}); 
+//         } 
 
-        const deletedFood = await Food.findOneAndDelete(foodname);
-        //res.json({message: "Food deleted successfully."});
-        res.redirect("/");
-    }catch(err){
-        console.log(err);
-        res.status(404).json({error:"Food not found."}); 
-    }
-}); 
+//         const deletedFood = await Food.findOneAndDelete(foodname);
+//         //res.json({message: "Food deleted successfully."});
+//         res.redirect("/");
+//     }catch(err){
+//         console.log(err);
+//         res.status(404).json({error:"Food not found."}); 
+//     }
+// }); 
 
 //Cloud - Non-local DB
 module.exports = app;

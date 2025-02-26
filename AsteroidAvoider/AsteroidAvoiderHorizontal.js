@@ -36,6 +36,10 @@ gameOverScreen.src = "images/gameover.png"
 var mainMenuScreen = new Image();
 mainMenuScreen.src = "images/mainmenu.png"
 
+//NEW - High Score Leaderboard
+var newName = "";
+var highscoreList;
+
 mainMenuScreen.onload = function(){
     main();
 }
@@ -84,15 +88,19 @@ function pressKeyUp(e){
             ship.down = false;
         }
     }
-    //Menu inputs use spacebar
+    //Menu inputs
     if(gameOver){
-        if(e.keyCode == 32){
-            if(currentState == 2){
+        if(e.keyCode == 32){ //spacebar
+            if(currentState == 2 || currentState == 3){
                 //game over inputs
                 currentState = 0;
                 numAsteroids = 20;
                 asteroids = [];
+                if(score > highScore){
+                    highScore = score;
+                }
                 score = 0;
+                newName = "";
                 //start game here
                 main();
                 gameStart();
@@ -106,6 +114,28 @@ function pressKeyUp(e){
                 gameStart();
             }
             
+        }
+        else if(e.keyCode >= 65 && e.keyCode <= 90){ //letters
+            if(currentState == 2){
+                //game over inputs
+                newName += e.key;
+                main();
+            }else{
+                //main menu inputs
+                currentState = 3;
+                main();
+            }
+        }
+        else if(e.keyCode == 13){ //enter
+            if(currentState == 2){
+                //game over inputs
+                //send newName and score to function
+                addHighScore(newName, score)
+
+                //Send to Leaderboard
+                currentState = 3;
+                main();
+            }
         }
     }
 }
@@ -268,6 +298,7 @@ gameState[0] = function(){
     ctx.fillText("Asteroid Avoider", canvas.width/2, canvas.height/2 - 30);
     ctx.font = "15px Supersonic Rocketship";
     ctx.fillText("Press Space to Start", canvas.width/2, canvas.height/2 + 20);
+    ctx.fillText("Press any other key to see High Scores", canvas.width/2, canvas.height/2 + 40);
     ctx.restore();
 }
 
@@ -381,17 +412,20 @@ gameState[2] = function(){
     ctx.drawImage(gameOverScreen, 0, 0);
     //code for game over menu
     if(score > highScore){
-        highScore = score;
+        //highScore = score;
 
         ctx.save();
         ctx.font = "30px Supersonic Rocketship";
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
         ctx.fillText("Game Over, Your Score was: " + score.toString(), canvas.width/2, canvas.height/2 - 60);
-        ctx.fillText("Your New High Score is: " + highScore.toString(), canvas.width/2, canvas.height/2 - 30);
+        ctx.fillText("Your New High Score is: " + score.toString(), canvas.width/2, canvas.height/2 - 30);
         ctx.fillText("New Record!", canvas.width/2, canvas.height/2);
+        //NEW
+        ctx.fillText("Enter Name Here: " + newName.toString(), canvas.width/2, canvas.height/2 + 30);
         ctx.font = "15px Supersonic Rocketship";
-        ctx.fillText("Press Space to Play Again", canvas.width/2, canvas.height/2 + 20);
+        ctx.fillText("Press Enter to Add to Leaderboard", canvas.width/2, canvas.height/2 + 60);
+        ctx.fillText("Press Space to Play Again", canvas.width/2, canvas.height/2 + 80);
         ctx.restore();
     }else{
         ctx.save();
@@ -401,9 +435,29 @@ gameState[2] = function(){
         ctx.fillText("Game Over, Your Score was: " + score.toString(), canvas.width/2, canvas.height/2 - 60);
         ctx.fillText("Your High Score is: " + highScore.toString(), canvas.width/2, canvas.height/2 - 30);
         ctx.font = "15px Supersonic Rocketship";
-        ctx.fillText("Press Space to Play Again", canvas.width/2, canvas.height/2 + 20);
+        ctx.fillText("Press Space to Play Again", canvas.width/2, canvas.height/2 + 30);
         ctx.restore();
     }
+}
+
+//NEW - High Scores State
+gameState[3] = function(){
+    //Fetch highscores
+    highscoreList = fetchHighScores();
+
+    ctx.drawImage(mainMenuScreen, 0, 0);
+    //code for high score menu
+    ctx.save();
+        ctx.font = "30px Supersonic Rocketship";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText("HIGH SCORES:", canvas.width/2, 60);
+        ctx.fillText("Name             Score", canvas.width/2, 90);
+        ctx.font = "25px Supersonic Rocketship";
+        ctx.fillText(highscoreList.toString(), canvas.width/2, 120);
+        ctx.font = "15px Supersonic Rocketship";
+        ctx.fillText("Press Space to go Main Menu", canvas.width/2, canvas.height - 20);
+        ctx.restore();
 }
 
 //Utility function
@@ -454,5 +508,41 @@ function powerUpTimer(){
         //calls scoreTimer every second
         //setTimeout(powerUpTimer, 10000);
         
+    }
+}
+
+//NEW
+const fetchHighScores = async ()=>{
+    try{
+        //fetch data from server
+        const response = await fetch("/highscores"); //pass route
+        if(!response.ok){
+            throw new Error("Failed to get highscores");
+        }
+
+        //Parse JSON
+        const highscores = await response.json();
+
+        var list = "";
+
+        highscores.forEach((score) => {
+
+            list = `${score.name}   ${score.highscore}`;
+        });
+
+        return list;
+    }catch(error){
+        console.error("Error: ", error);
+    }
+}
+
+const addHighScore = async (req, res)=>{
+    try{
+        res = await post("/register"); //pass route //PROBLEM - does not recognize "post"
+        if(!res.ok){
+            throw new Error("Failed to add highscore");
+        }
+    }catch(error){
+        console.error("Error: ", error);
     }
 }
