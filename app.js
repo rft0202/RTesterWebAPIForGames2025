@@ -3,37 +3,30 @@ const path = require("path");
 const mongoose = require("mongoose"); //interface with mongoDB
 const bodyParser = require("body-parser"); //parses JSON
 //Login
-//*6
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 //
 //Registering Users
-//*11
 const User = require("./models/User");
-//Added - Hide Sensitive Information
-//*16
+//Hide Sensitive Information
 require("dotenv").config();
 
 const app = express();
 //const port = 3000; //port on computer that we will be using to communicate to the outside
-const port = process.env.port||3000;
+const port = process.env.port||5000;
 
 //Serve Static Data (data that won't change)
-app.use(express.static(path.join(__dirname, "public"))); //app.use: tell node application what it can use //express.static: declare static directory
-//*4
+//app.use(express.static(path.join(__dirname, "public"))); //app.use: tell node application what it can use //express.static: declare static directory
+app.use(express.static(path.join(__dirname, "AsteroidAvoider"))); //Added - Asteroid Avoider
 
 //Middleware
 app.use(bodyParser.json()); //to parse JSON requests
-//*2
 app.use(express.urlencoded({extended:true}));
 
 //Login
-//*7
 //Sets up session variable
 app.use(session({
     //Hide Sensitive Information
-    //secret: "12345",
-    //*17
     secret:process.env.SESSION_SECRET,
     resave:false,
     saveUninitialized:true,
@@ -49,10 +42,8 @@ function isAuthenticated(req,res,next){
 
 //MongoDB connection setup
 //const mongoURI = "mongodb://localhost:27017/data"; //set up mongoDB connection
-//*15
-//Added - Access non-local DB
-//*18
-//Added - Hide sensitive information
+//Access non-local DB
+//Hide sensitive information
 const mongoURI = process.env.MONGODB_URI;
 mongoose.connect(mongoURI);
 
@@ -100,7 +91,6 @@ app.get("/food/:id", async (req,res)=>{
 });
 
 //Added - Login
-//*8
 app.get("/addtolist", isAuthenticated, (req,res)=>{
     res.sendFile(path.join(__dirname, "public", "addtolist.html")); 
 });
@@ -118,8 +108,7 @@ app.get("/checklogin", isAuthenticated, (req, res)=>{
 });
 //
 
-//Added - Register user
-//*12
+//Register user
 app.get("/register", (req,res)=>{
     res.sendFile(path.join(__dirname, "public", "register.html"));
 });
@@ -158,7 +147,6 @@ app.listen(port, ()=>{ //start server
 
 //Create Route (POST)
 //Add to list
-//*3
 app.post("/addfood", async (req, res)=>{
     try{
         const newFood = new Food(req.body);
@@ -185,8 +173,7 @@ app.post("/updatefood/:id", isAuthenticated, (req,res)=>{
     }); 
 });
 
-//Added - Login
-//*9 *14
+//Login
 app.post("/login", async (req, res)=>{
     const {username, password} = req.body;
     console.log(req.body);
@@ -228,22 +215,5 @@ app.post("/deletefood/food", isAuthenticated, async (req,res)=>{
     }
 }); 
 
-//Added - Cloud
-//*19
+//Cloud - Non-local DB
 module.exports = app;
-
-// //Our first example Route
-// app.get("/", function(req, res){ //app.get([endpoint], callback function(request, response))
-//     //res.send("Hello everyone!"); //serve a string
-//     res.sendFile(path.join(__dirname, "public", "index.html")); //serve a webpage
-// });
-
-// //Route using games.json
-// app.get("/testjson", (req, res)=>{ //()=> means anonymous function
-//     res.sendFile(path.join(__dirname, "public", "json/games.json"))
-// });
-
-// //spin the server?
-// app.listen(port, function(){
-//     console.log(`Server is running on port: ${port}`); //string literal
-// }); //port, callback function (anonymous function that will trigger things)
