@@ -71,7 +71,7 @@ app.get("/", (req,res)=>{
 app.get("/highscores", async (req, res)=>{
     try {
         const highscores = await HighScore.find();
-        highscores.sort((a,b)=>a.highscore-b.highscore);
+        highscores.sort((a,b)=>b.highscore-a.highscore);
         res.json(highscores);
     } catch(err){
         res.status(500).json({error:"Failed to get highscores."});
@@ -124,13 +124,14 @@ app.listen(port, ()=>{ //start server
 //Create Route (POST)
 app.post("/register", async (req,res)=>{
     try{
+        console.log(req.body.name);
         const {name, highscore} = req.body;
 
         const existingHighScore = await HighScore.findOne({name});
 
-        if(existingHighScore){
-            return res.send("Name already taken. Try a different one");
-        }
+        // if(existingHighScore){
+        //     return res.send("Name already taken. Try a different one");
+        // }
 
         const newHighScore = new HighScore({name, highscore});
         await newHighScore.save();

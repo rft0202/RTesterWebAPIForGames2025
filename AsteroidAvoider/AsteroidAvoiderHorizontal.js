@@ -38,7 +38,7 @@ mainMenuScreen.src = "images/mainmenu.png"
 
 //NEW - High Score Leaderboard
 var newName = "";
-var highscoreList;
+var highscoreList = [];
 
 mainMenuScreen.onload = function(){
     main();
@@ -118,18 +118,14 @@ function pressKeyUp(e){
         else if(e.keyCode >= 65 && e.keyCode <= 90){ //letters
             if(currentState == 2){
                 //game over inputs
-                newName += e.key;
-                main();
+                if(score > highScore)
+                {
+                    newName += e.key;
+                    main();
+                }
             }else{
                 //main menu inputs
                 currentState = 3;
-                main();
-            }
-        }
-        else if(e.keyCode == 13){
-            if(currentState == 2){
-                //game over inputs
-                newName += e.key;
                 main();
             }
         }
@@ -137,11 +133,15 @@ function pressKeyUp(e){
             if(currentState == 2){
                 //game over inputs
                 //send newName and score to function
-                var newHighScore = {newName, score};
-                addHighScore(newHighScore);
+                if(score > highScore)
+                {
+                    var newHighScore = {name:newName, highscore:score};
+                    addHighScore(newHighScore);
+                }
 
                 //Send to Leaderboard
                 currentState = 3;
+                main();
                 main();
             }
             else if(currentState == 0){
@@ -310,7 +310,7 @@ gameState[0] = function(){
     ctx.fillText("Asteroid Avoider", canvas.width/2, canvas.height/2 - 30);
     ctx.font = "15px Supersonic Rocketship";
     ctx.fillText("Press Space to Start", canvas.width/2, canvas.height/2 + 20);
-    ctx.fillText("Press any other key to see High Scores", canvas.width/2, canvas.height/2 + 40);
+    ctx.fillText("Press Enter to see High Scores", canvas.width/2, canvas.height/2 + 40);
     ctx.restore();
 }
 
@@ -447,7 +447,8 @@ gameState[2] = function(){
         ctx.fillText("Game Over, Your Score was: " + score.toString(), canvas.width/2, canvas.height/2 - 60);
         ctx.fillText("Your High Score is: " + highScore.toString(), canvas.width/2, canvas.height/2 - 30);
         ctx.font = "15px Supersonic Rocketship";
-        ctx.fillText("Press Space to Play Again", canvas.width/2, canvas.height/2 + 30);
+        ctx.fillText("Press Enter to see High Scores", canvas.width/2, canvas.height/2 + 30);
+        ctx.fillText("Press Space to Play Again", canvas.width/2, canvas.height/2 + 60);
         ctx.restore();
     }
 }
@@ -466,7 +467,11 @@ gameState[3] = async function(){
         ctx.fillText("HIGH SCORES:", canvas.width/2, 60);
         ctx.fillText("Name             Score", canvas.width/2, 90);
         ctx.font = "25px Supersonic Rocketship";
-        ctx.fillText(highscoreList.toString(), canvas.width/2, 120);
+        var y = 120;
+        highscoreList.forEach(score => {
+            ctx.fillText(score.toString(), canvas.width/2, y);
+            y +=30;
+        });
         ctx.font = "15px Supersonic Rocketship";
         ctx.fillText("Press Space to go Main Menu", canvas.width/2, canvas.height - 20);
         ctx.restore();
@@ -536,11 +541,11 @@ const fetchHighScores = async ()=>{
         const highscores = await response.json();
         console.log(highscores);
 
-        var list = "";
+        var list = [];
 
         highscores.forEach((score) => {
 
-            list += `${score.name}             ${score.highscore}`;
+            list.push(`${score.name}             ${score.highscore}`);
             console.log(`${score.name}   ${score.highscore}`);
         });
 
@@ -550,9 +555,10 @@ const fetchHighScores = async ()=>{
     }
 }
 
-const addHighScore = async (req, res)=>{
+const addHighScore = async (req)=>{
     try{
-        res = await fetch("/register", "POST"); //pass route //PROBLEM - does not recognize "post"
+        console.log(JSON.stringify(req));
+        const res = await fetch("/register", {method:"POST", body: JSON.stringify(req), headers:{"Content-Type": "application/json"}}); //pass route 
         if(!res.ok){
             throw new Error("Failed to add highscore");
         }
