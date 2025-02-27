@@ -126,13 +126,25 @@ function pressKeyUp(e){
                 main();
             }
         }
+        else if(e.keyCode == 13){
+            if(currentState == 2){
+                //game over inputs
+                newName += e.key;
+                main();
+            }
+        }
         else if(e.keyCode == 13){ //enter
             if(currentState == 2){
                 //game over inputs
                 //send newName and score to function
-                addHighScore(newName, score)
+                var newHighScore = {newName, score};
+                addHighScore(newHighScore);
 
                 //Send to Leaderboard
+                currentState = 3;
+                main();
+            }
+            else if(currentState == 0){
                 currentState = 3;
                 main();
             }
@@ -441,9 +453,9 @@ gameState[2] = function(){
 }
 
 //NEW - High Scores State
-gameState[3] = function(){
+gameState[3] = async function(){
     //Fetch highscores
-    highscoreList = fetchHighScores();
+    highscoreList = await fetchHighScores();
 
     ctx.drawImage(mainMenuScreen, 0, 0);
     //code for high score menu
@@ -522,12 +534,14 @@ const fetchHighScores = async ()=>{
 
         //Parse JSON
         const highscores = await response.json();
+        console.log(highscores);
 
         var list = "";
 
         highscores.forEach((score) => {
 
-            list = `${score.name}   ${score.highscore}`;
+            list += `${score.name}             ${score.highscore}`;
+            console.log(`${score.name}   ${score.highscore}`);
         });
 
         return list;
@@ -538,7 +552,7 @@ const fetchHighScores = async ()=>{
 
 const addHighScore = async (req, res)=>{
     try{
-        res = await post("/register"); //pass route //PROBLEM - does not recognize "post"
+        res = await fetch("/register", "POST"); //pass route //PROBLEM - does not recognize "post"
         if(!res.ok){
             throw new Error("Failed to add highscore");
         }
