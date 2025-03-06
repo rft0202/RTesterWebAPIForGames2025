@@ -16,7 +16,7 @@ require("dotenv").config();
 
 const app = express();
 //const port = 3000; //port on computer that we will be using to communicate to the outside
-const port = process.env.port||3000;
+const port = process.env.port;//||3000;
 
 //Serve Static Data (data that won't change)
 app.use(express.static(path.join(__dirname, "public"))); //app.use: tell node application what it can use //express.static: declare static directory
